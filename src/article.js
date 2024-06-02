@@ -10,16 +10,51 @@ router.post("/", auth, async (req, res) => {
 	res.status(201).send(article);
 });
 
+// router.get("/", async (req, res) => {
+// 	const category = req.query.category;
+// 	let query = {};
+// 	if (category) {
+// 		// If a category query parameter is provided, filter by category
+// 		query.category = category;
+// 	}
+// 	try {
+// 		const articles = await Article.find(query).populate("author", "username");
+// 		res.send(articles);
+// 	} catch (error) {
+// 		res.status(500).send("Server error");
+// 	}
+// });
+
 router.get("/", async (req, res) => {
-	const articles = await Article.find().populate("author", "username");
-	res.send(articles);
+	const categoryQuery = req.query.category;
+	let filter = {};
+	if (categoryQuery) {
+		// Add a filter for the category if the query parameter is provided
+		filter.category = categoryQuery;
+	}
+	try {
+		const articles = await Article.find(filter).populate("author", "username");
+		res.send(articles);
+	} catch (error) {
+		res.status(500).send("Server error");
+	}
+});
+
+router.get("/articles", async (req, res) => {
+	const { category } = req.query;
+	try {
+		const articles = await Article.find({ category: category });
+		res.json({ articles });
+	} catch (error) {
+		res.status(500).json({ message: "Server error" });
+	}
 });
 
 router.get("/:id", async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id)
 			.populate("author", "username")
-			.populate("comments.user", "username"); // Populate comments with user info
+			.populate("comments.user", "username");
 		if (!article) {
 			return res.status(404).send("Article not found");
 		}
@@ -53,7 +88,7 @@ router.post("/:id/comments", auth, async (req, res) => {
 		await article.save();
 		const populatedArticle = await Article.findById(req.params.id)
 			.populate("author", "username")
-			.populate("comments.user", "username"); // Populate comments with user info
+			.populate("comments.user", "username");
 		res.send(populatedArticle);
 	} catch (error) {
 		res.status(500).send("Server error");
