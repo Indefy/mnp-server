@@ -1,29 +1,8 @@
 const express = require("express");
-const auth = require("./middleware/middleware");
-const Article = require("./models/Article"); // Import the Article model
+const auth = require("../middleware/middleware");
+const Article = require("../models/Article");
 
 const router = express.Router();
-
-router.post("/", auth, async (req, res) => {
-	const article = new Article({ ...req.body, author: req.user.userId });
-	await article.save();
-	res.status(201).send(article);
-});
-
-// router.get("/", async (req, res) => {
-// 	const category = req.query.category;
-// 	let query = {};
-// 	if (category) {
-// 		// If a category query parameter is provided, filter by category
-// 		query.category = category;
-// 	}
-// 	try {
-// 		const articles = await Article.find(query).populate("author", "username");
-// 		res.send(articles);
-// 	} catch (error) {
-// 		res.status(500).send("Server error");
-// 	}
-// });
 
 router.get("/", async (req, res) => {
 	const categoryQuery = req.query.category;
@@ -38,30 +17,36 @@ router.get("/", async (req, res) => {
 	} catch (error) {
 		res.status(500).send("Server error");
 	}
-});
 
-router.get("/articles", async (req, res) => {
-	const { category } = req.query;
-	try {
-		const articles = await Article.find({ category: category });
-		res.json({ articles });
-	} catch (error) {
-		res.status(500).json({ message: "Server error" });
-	}
-});
-
-router.get("/:id", async (req, res) => {
-	try {
-		const article = await Article.findById(req.params.id)
-			.populate("author", "username")
-			.populate("comments.user", "username");
-		if (!article) {
-			return res.status(404).send("Article not found");
+	router.get("/articles", async (req, res) => {
+		const { category } = req.query;
+		try {
+			const articles = await Article.find({ category: category });
+			res.json({ articles });
+		} catch (error) {
+			res.status(500).json({ message: "Server error" });
 		}
-		res.send(article);
-	} catch (error) {
-		res.status(500).send("Server error");
-	}
+	});
+
+	router.get("/:id", async (req, res) => {
+		try {
+			const article = await Article.findById(req.params.id)
+				.populate("author", "username")
+				.populate("comments.user", "username");
+			if (!article) {
+				return res.status(404).send("Article not found");
+			}
+			res.send(article);
+		} catch (error) {
+			res.status(500).send("Server error");
+		}
+	});
+});
+
+router.post("/", auth, async (req, res) => {
+	const article = new Article({ ...req.body, author: req.user.userId });
+	await article.save();
+	res.status(201).send(article);
 });
 
 router.put("/:id", auth, async (req, res) => {

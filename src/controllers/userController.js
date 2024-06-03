@@ -8,12 +8,14 @@ const router = express.Router();
 
 const getUserProfile = async (req, res) => {
 	try {
+		console.log("Fetching profile for user ID:", req.user.userId); // Log user ID
 		const user = await User.findById(req.user.userId).select("-password");
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 		res.json(user);
 	} catch (error) {
+		console.error("Server error fetching user profile:", error); // Log error
 		res.status(500).json({ message: "Server error" });
 	}
 };
