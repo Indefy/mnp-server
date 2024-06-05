@@ -8,7 +8,6 @@ router.get("/", async (req, res) => {
 	const categoryQuery = req.query.category;
 	let filter = {};
 	if (categoryQuery) {
-		// Add a filter for the category if the query parameter is provided
 		filter.category = categoryQuery;
 	}
 	try {
@@ -17,30 +16,29 @@ router.get("/", async (req, res) => {
 	} catch (error) {
 		res.status(500).send("Server error");
 	}
+});
 
-	router.get("/articles", async (req, res) => {
-		const { category } = req.query;
-		try {
-			const articles = await Article.find({ category: category });
-			res.json({ articles });
-		} catch (error) {
-			res.status(500).json({ message: "Server error" });
-		}
-	});
+router.get("/categories", async (req, res) => {
+	try {
+		const categories = await Article.distinct("category");
+		res.json(categories);
+	} catch (error) {
+		res.status(500).send("Server error");
+	}
+});
 
-	router.get("/:id", async (req, res) => {
-		try {
-			const article = await Article.findById(req.params.id)
-				.populate("author", "username")
-				.populate("comments.user", "username");
-			if (!article) {
-				return res.status(404).send("Article not found");
-			}
-			res.send(article);
-		} catch (error) {
-			res.status(500).send("Server error");
+router.get("/:id", async (req, res) => {
+	try {
+		const article = await Article.findById(req.params.id)
+			.populate("author", "username")
+			.populate("comments.user", "username");
+		if (!article) {
+			return res.status(404).send("Article not found");
 		}
-	});
+		res.send(article);
+	} catch (error) {
+		res.status(500).send("Server error");
+	}
 });
 
 router.post("/", auth, async (req, res) => {
