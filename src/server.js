@@ -8,13 +8,14 @@ const articleRouter = require("./controllers/articleController");
 
 const app = express();
 
+// Configure CORS
 app.use(
 	cors({
+		origin: process.env.CORS_ORIGIN,
 		credentials: true,
-		origin: process.env.FRONTEND_URL,
-		methods: ["GET", "POST", "PUT", "DELETE"],
 	})
 );
+
 app.use(express.json());
 app.use(cookieParser());
 
