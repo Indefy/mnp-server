@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 const userRouter = require("./controllers/userController");
 const articleRouter = require("./controllers/articleController");
 
@@ -11,8 +12,9 @@ const app = express();
 // Configure CORS
 app.use(
 	cors({
-		origin: process.env.CORS_ORIGIN,
 		credentials: true,
+		origin: process.env.CORS_ORIGIN,
+		methods: ["GET", "POST", "PUT", "DELETE"],
 	})
 );
 
@@ -52,6 +54,14 @@ app.use((err, req, res, next) => {
 		.status(err.status || 500)
 		.send({ message: err.message || "Internal Server Error" });
 });
+
+if (process.env.NODE_ENV === "production") {
+	app.use(express.static(path.join(__dirname, "client/build")));
+
+	app.get("*", (req, res) => {
+		res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+	});
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
