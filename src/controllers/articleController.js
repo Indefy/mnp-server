@@ -4,12 +4,19 @@ const Article = require("../models/Article");
 
 const router = express.Router();
 
+// Route to fetch articles with optional category and search query parameters
 router.get("/", async (req, res) => {
-	const categoryQuery = req.query.category;
+	const { category, search } = req.query;
 	let filter = {};
-	if (categoryQuery) {
-		filter.category = categoryQuery;
+
+	if (category) {
+		filter.category = category;
 	}
+
+	if (search) {
+		filter.title = { $regex: search, $options: "i" };
+	}
+
 	try {
 		const articles = await Article.find(filter).populate("author", "username");
 		res.send(articles);
@@ -18,6 +25,7 @@ router.get("/", async (req, res) => {
 	}
 });
 
+// Route to fetch distinct categories
 router.get("/categories", async (req, res) => {
 	try {
 		const categories = await Article.distinct("category");
@@ -27,6 +35,7 @@ router.get("/categories", async (req, res) => {
 	}
 });
 
+// Route to fetch a single article by ID
 router.get("/:id", async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id)
@@ -41,12 +50,14 @@ router.get("/:id", async (req, res) => {
 	}
 });
 
+// Route to create a new article
 router.post("/", auth, async (req, res) => {
 	const article = new Article({ ...req.body, author: req.user.userId });
 	await article.save();
 	res.status(201).send(article);
 });
 
+// Route to update an existing article
 router.put("/:id", auth, async (req, res) => {
 	const article = await Article.findById(req.params.id);
 	if (article.author.toString() !== req.user.userId)
@@ -56,6 +67,7 @@ router.put("/:id", auth, async (req, res) => {
 	res.send(article);
 });
 
+// Route to delete an existing article
 router.delete("/:id", auth, async (req, res) => {
 	const article = await Article.findById(req.params.id);
 	if (article.author.toString() !== req.user.userId)
@@ -64,6 +76,7 @@ router.delete("/:id", auth, async (req, res) => {
 	res.send("Article deleted");
 });
 
+// Route to add a comment to an article
 router.post("/:id/comments", auth, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
@@ -78,6 +91,7 @@ router.post("/:id/comments", auth, async (req, res) => {
 	}
 });
 
+// Route to like or unlike an article
 router.post("/:id/like", auth, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
@@ -96,6 +110,7 @@ router.post("/:id/like", auth, async (req, res) => {
 	}
 });
 
+// Route to bookmark or unbookmark an article
 router.post("/:id/bookmark", auth, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
