@@ -4,8 +4,9 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
-const userRouter = require("./controllers/userController");
+const userRouter = require("./controllers/userController"); // Import userController
 const articleRouter = require("./controllers/articleController");
+const authRouter = require("./controllers/authController"); // Updated
 
 const app = express();
 
@@ -41,6 +42,7 @@ connectToDatabase();
 
 app.use("/api/users", userRouter);
 app.use("/api/articles", articleRouter);
+app.use("/api/auth", authRouter);
 
 // 404 error handling middleware
 app.use((req, res, next) => {

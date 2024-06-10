@@ -1,5 +1,5 @@
 const express = require("express");
-const auth = require("../middleware/middleware");
+const authMiddleware = require("../middleware/middleware");
 const Article = require("../models/Article");
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
 	}
 
 	if (search) {
-		filter.title = { $regex: search, $options: "i" };
+		filter.title = { $regex: search, $options: "i" }; // Case-insensitive search
 	}
 
 	try {
@@ -51,14 +51,14 @@ router.get("/:id", async (req, res) => {
 });
 
 // Route to create a new article
-router.post("/", auth, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
 	const article = new Article({ ...req.body, author: req.user.userId });
 	await article.save();
 	res.status(201).send(article);
 });
 
 // Route to update an existing article
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
 	const article = await Article.findById(req.params.id);
 	if (article.author.toString() !== req.user.userId)
 		return res.status(403).send("Forbidden");
@@ -68,7 +68,7 @@ router.put("/:id", auth, async (req, res) => {
 });
 
 // Route to delete an existing article
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
 	const article = await Article.findById(req.params.id);
 	if (article.author.toString() !== req.user.userId)
 		return res.status(403).send("Forbidden");
@@ -77,7 +77,7 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 // Route to add a comment to an article
-router.post("/:id/comments", auth, async (req, res) => {
+router.post("/:id/comments", authMiddleware, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
 		article.comments.push({ user: req.user.userId, content: req.body.content });
@@ -92,7 +92,7 @@ router.post("/:id/comments", auth, async (req, res) => {
 });
 
 // Route to like or unlike an article
-router.post("/:id/like", auth, async (req, res) => {
+router.post("/:id/like", authMiddleware, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
 		if (!article.likes.includes(req.user.userId)) {
@@ -111,7 +111,7 @@ router.post("/:id/like", auth, async (req, res) => {
 });
 
 // Route to bookmark or unbookmark an article
-router.post("/:id/bookmark", auth, async (req, res) => {
+router.post("/:id/bookmark", authMiddleware, async (req, res) => {
 	try {
 		const article = await Article.findById(req.params.id);
 		if (!article.bookmarks.includes(req.user.userId)) {
