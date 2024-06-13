@@ -22,12 +22,13 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Middleware for logging errors
+// Centralized error handling middleware for logging
 app.use((err, req, res, next) => {
 	console.error(err.stack);
 	res.status(500).send({ message: "Internal Server Error" });
 });
 
+// Establish connection to MongoDB
 const connectToDatabase = async () => {
 	try {
 		await mongoose.connect(process.env.MONGODB_URI, {});
@@ -40,6 +41,7 @@ const connectToDatabase = async () => {
 
 connectToDatabase();
 
+// Routing middleware for different entity operations
 app.use("/api/users", userRouter);
 app.use("/api/articles", articleRouter);
 app.use("/api/auth", authRouter);

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Middleware to verify authentication token and authorize user access
 const authMiddleware = (req, res, next) => {
 	const token =
 		req.cookies.authToken ||
